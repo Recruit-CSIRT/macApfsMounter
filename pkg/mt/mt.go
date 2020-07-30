@@ -41,22 +41,20 @@ func Run (config *conf.Config) error {
 	var err error
 	// stap 1 mount e01
 	// E01 to E*
-	imgPath := config.ImgPath
+	var imgPaths []string
 	filename := filepath.Base(config.ImgPath[:len(config.ImgPath) - len(filepath.Ext(config.ImgPath))])
 	if config.FileType == "ewf" && strings.HasPrefix(filepath.Ext(config.ImgPath), ".E") && len(filepath.Ext(config.ImgPath)) == 4 {
-		imgPath = filepath.Join(filepath.Dir(config.ImgPath), filename + ".E*" )
+		var pattern = filepath.Dir(config.ImgPath) + "/" + filename + ".E[0-9A-Z][0-9A-Z]"
+		imgPaths, _ = filepath.Glob(pattern)
 	}
-
-	imgPath = strings.Replace(imgPath, " ", "\\ ", -1)
 
 	// xmount
 	fmt.Println("[+] Make a mount dir to put dmg file.")
 	// sudo xmount --in ewf david_lightman_system.E01 --out dmg /tmp/evidence_image_dmg/
-	// I know here is a OS command injection vulnerability....
-	// the mitigation is to check the path but ^^
-
 	if config.FileType == "ewf" || config.FileType == "raw" {
-		cmd := []string{ "/bin/bash", "-c", conf.CmdXmount + " --in " + config.FileType + " "+ imgPath + " --out dmg " + conf.DmgMntPoint}
+		cmd := []string{ conf.CmdXmount, "--in", config.FileType}
+		cmd = append(cmd, imgPaths...)
+		cmd = append(cmd, "--out", "dmg", conf.DmgMntPoint)
 		if err = mount(conf.DmgMntPoint, cmd); err != nil{
 			return err
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Recruit-CSIRT/macApfsMounter/pkg/conf"
 	"github.com/Recruit-CSIRT/macApfsMounter/pkg/mt"
+	"os"
 )
 
 func init() {
@@ -29,24 +30,24 @@ func main() {
 		} else{
 			fmt.Println("[+] Success to unmount. ")
 		}
-		return
+		os.Exit(0)
 	}
 
 	if len(config.ImgPath) == 0 {
-		return
 		flag.Usage()
+		os.Exit(0)
 	}
 
 	fmt.Println("[+] Tool start.")
 
 	if f, err := config.CheckFileType(); !f {
 		fmt.Println(err.Error())
-		return
+		os.Exit(1)
 	}
 
 	if f, err := config.CheckImgFile(); !f {
 		fmt.Println(err.Error())
-		return
+		os.Exit(1)
 	}
 
 	if err := mt.Run(&config); err != nil {
